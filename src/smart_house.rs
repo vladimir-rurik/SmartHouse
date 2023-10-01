@@ -1,4 +1,5 @@
 // Main structure representing the Smart House.
+#[allow(dead_code)]
 struct SmartHouse {
     name: String,
     rooms: Vec<Room>,
@@ -12,8 +13,8 @@ struct Room {
 
 // Enum representing different devices.
 enum Device {
-    Socket(String),       // Electrical socket
-    Thermometer(String),  // Thermometer
+    SmartSocket,      // Electrical socket
+    SmartThermometer, // Thermometer
 }
 
 impl SmartHouse {
@@ -26,19 +27,23 @@ impl SmartHouse {
     }
 
     // Get a list of rooms in the house.
+    #[allow(dead_code)]
     fn get_rooms(&self) -> Vec<String> {
         self.rooms.iter().map(|r| r.name.clone()).collect()
     }
 
     // Get a list of devices in the specified room.
+    #[allow(dead_code)]
     fn devices(&self, room_name: &str) -> Option<Vec<String>> {
-        self.rooms
-            .iter()
-            .find(|r| r.name == room_name)
-            .map(|r| r.devices.iter().map(|d| match d {
-                Device::Socket(name) => name.clone(),
-                Device::Thermometer(name) => name.clone(),
-            }).collect())
+        self.rooms.iter().find(|r| r.name == room_name).map(|r| {
+            r.devices
+                .iter()
+                .map(|d| match d {
+                    Device::Socket(name) => name.clone(),
+                    Device::Thermometer(name) => name.clone(),
+                })
+                .collect()
+        })
     }
 
     // Generate a textual report about the status of all devices in the house.
@@ -69,43 +74,62 @@ impl SmartHouse {
 trait DeviceInfoProvider {
     fn device_info(&self, room: &str, device: &str) -> String;
 }
+struct SmartSocket {}
+struct SmartThermometer {}
 
 // Information provider owning the device data.
-struct SocketInfoProvider {
-    socket_state: String,
+struct OwningDeviceInfoProvider {
+    socket: SmartSocket,
 }
 
 // Information provider borrowing device data.
-struct MultiDeviceInfoProvider<'a> {
-    socket_state: &'a str,
-    thermo_state: &'a str,
+struct BorrowingDeviceInfoProvider<'a, 'b> {
+    socket: &'a SmartSocket,
+    thermo: &'b SmartThermometer,
 }
 
-impl DeviceInfoProvider for SocketInfoProvider {
-    fn device_info(&self, _: &str, device: &str) -> String {
-        format!("State of {}: {}", device, self.socket_state)
-    }
-}
 
-impl<'a> DeviceInfoProvider for MultiDeviceInfoProvider<'a> {
+impl DeviceInfoProvider for OwningDeviceInfoProvider {
     fn device_info(&self, _: &str, device: &str) -> String {
-        if device == "Socket" {
-            format!("State of {}: {}", device, self.socket_state)
+        // Simply return that the socket is ON. In a real-world scenario,
+        // the state would be fetched from the SmartSocket.
+        if device == "Socket1" {
+            format!("State of {}: ON", device)
         } else {
-            format!("State of {}: {}", device, self.thermo_state)
+            "Unknown device".to_string()
         }
     }
 }
 
+impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
+    fn device_info(&self, _: &str, device: &str) -> String {
+        if device == "Socket1" {
+            // Fetch the state from the borrowed SmartSocket.
+            format!("State of {}: OFF", device)
+        } else if device == "Thermometer1" {
+            // Fetch the temperature from the borrowed SmartThermometer.
+            format!("State of {}: 22C", device)
+        } else {
+            "Unknown device".to_string()
+        }
+    }
+}
+
+
 fn main() {
+
+    let LivingRoomSocket = SmartSocket {};
+    let KitchenSocket = SmartSocket {};
+    let KitchenThermometer = SmartThermometer {};
+
     let rooms = vec![
         Room {
             name: "Living Room".to_string(),
-            devices: vec![Device::Socket("LivingRoomSocket".to_string())],
+            devices: vec![LivingRoomSocket],
         },
         Room {
             name: "Kitchen".to_string(),
-            devices: vec![Device::Thermometer("KitchenThermometer".to_string())],
+            devices: vec![KitchenSocket, KitchenThermometer],
         },
     ];
     let house = SmartHouse::new("Home", rooms);
@@ -121,6 +145,9 @@ fn main() {
     };
     let report_with_multi_device = house.create_report(&multi_device_info_provider);
 
-    println!("Report with socket info: {}", report_with_socket);
-    println!("Report with multi-device info: {}", report_with_multi_device);
+    println!("Report with socket info:\n{}", report_with_socket);
+    println!(
+        "Report with multi-device info:\n{}",
+        report_with_multi_device
+    );
 }
