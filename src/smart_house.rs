@@ -13,9 +13,10 @@ struct Room {
 
 // Enum representing different devices.
 enum Device {
-    SmartSocket,      // Electrical socket
-    SmartThermometer, // Thermometer
+    Socket(SmartSocket),
+    Thermometer(SmartThermometer),
 }
+
 
 impl SmartHouse {
     // Create a new Smart House.
@@ -90,13 +91,10 @@ struct BorrowingDeviceInfoProvider<'a, 'b> {
 
 
 impl DeviceInfoProvider for OwningDeviceInfoProvider {
-    fn device_info(&self, _: &str, device: &str) -> String {
-        // Simply return that the socket is ON. In a real-world scenario,
-        // the state would be fetched from the SmartSocket.
-        if device == "Socket1" {
-            format!("State of {}: ON", device)
-        } else {
-            "Unknown device".to_string()
+    fn device_info(&self, _: &str, device: &Device) -> String {
+        match device {
+            Device::Socket(_) => format!("State of Socket: {}", self.socket_state),
+            Device::Thermometer(_) => format!("Temperature of Thermometer: {}", self.thermo_state),
         }
     }
 }
@@ -121,17 +119,18 @@ fn main() {
     let LivingRoomSocket = SmartSocket {};
     let KitchenSocket = SmartSocket {};
     let KitchenThermometer = SmartThermometer {};
-
+    
     let rooms = vec![
         Room {
             name: "Living Room".to_string(),
-            devices: vec![LivingRoomSocket],
+            devices: vec![Device::Socket(LivingRoomSocket)],
         },
         Room {
             name: "Kitchen".to_string(),
-            devices: vec![KitchenSocket, KitchenThermometer],
+            devices: vec![Device::Thermometer(KitchenThermometer), Device::Socket(KitchenSocket)],
         },
     ];
+    
     let house = SmartHouse::new("Home", rooms);
 
     let socket_info_provider = SocketInfoProvider {
