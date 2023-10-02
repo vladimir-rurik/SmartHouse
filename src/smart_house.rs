@@ -23,12 +23,14 @@ struct SmartThermometer {
 }
 
 #[derive(Clone)]
+#[derive(Debug)]
 enum SocketState {
     On,
     Off,
 }
 
 #[derive(Clone)]
+#[derive(Debug)]
 #[allow(dead_code)]
 enum ThermometerState {
     Off,
@@ -65,6 +67,25 @@ impl DeviceInfoProvider for OwningDeviceInfoProvider {
         }
     }
 }
+
+struct BorrowingDeviceInfoProvider<'a, 'b> {
+    socket: &'a SmartSocket,
+    thermo: &'b SmartThermometer,
+}
+
+impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
+    fn device_info(&self, room_name: &str, device_name: &str) -> String {
+        // Check if the requested device name matches the name of the socket or thermometer
+        if device_name == self.socket.name {
+            format!("Room: {}, Device: SmartSocket named {}, State: {:?}", room_name, device_name, self.socket.state)
+        } else if device_name == self.thermo.name {
+            format!("Room: {}, Device: SmartThermometer named {}, State: {:?}", room_name, device_name, self.thermo.state)
+        } else {
+            format!("Device named '{}' not found in room '{}'", device_name, room_name)
+        }
+    }
+}
+
 
 impl SmartHouse {
     // Create a new Smart House.
@@ -155,4 +176,15 @@ impl SmartHouse {
     let report_with_socket = house.create_report(&socket_info_provider);
 
     println!("Report with socket info:\n{}", report_with_socket);
+
+    let multi_device_info_provider = BorrowingDeviceInfoProvider {
+        socket: &kitchen_socket,
+        thermo: &kitchen_thermometer,
+    };
+    let report_with_multi_device = house.create_report(&multi_device_info_provider);
+
+    println!(
+        "Report with multi-device info:\n{}",
+        report_with_multi_device
+    );
 }
