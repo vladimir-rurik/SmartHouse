@@ -10,13 +10,68 @@ struct Room {
     name: String,
     devices: Vec<Device>,
 }
+struct SmartSocket {
+    name: String,
+    state: String,
+}
+struct SmartThermometer {
+    name: String,
+}
+
+enum SoketState {
+    On,
+    Off,
+}
+
+enum ThermometerState {
+    On,
+    Off,
+    Temperature(f32),
+}
 
 // Enum representing different devices.
 enum Device {
-    Socket(SmartSocket),
-    Thermometer(SmartThermometer),
+    SmartSocket(name),
+    SmartThermometer(name),
 }
 
+// Trait for providing information about the status of devices.
+trait DeviceInfoProvider {
+    fn device_info(&self, room: &str, device_name: &str) -> String;
+}
+
+// Information provider owning the device data.
+struct OwningDeviceInfoProvider {
+    socket: SmartSocket,
+}
+
+impl DeviceInfoProvider for OwningDeviceInfoProvider {
+    fn device_info(&self, _: &str, device_name: &str) -> String {
+        match device_name {
+            Device::Socket(_) => format!("State of Socket: {}", self.socket_state),
+            Device::Thermometer(_) => format!("Temperature of Thermometer: {}", self.thermo_state),
+        }
+    }
+}
+// Information provider borrowing device data.
+struct BorrowingDeviceInfoProvider<'a, 'b> {
+    socket: &'a SmartSocket,
+    thermo: &'b SmartThermometer,
+}
+
+impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
+    fn device_info(&self, _: &str, device: &str) -> String {
+        if device == "Socket1" {
+            // Fetch the state from the borrowed SmartSocket.
+            format!("State of {}: OFF", device)
+        } else if device == "Thermometer1" {
+            // Fetch the temperature from the borrowed SmartThermometer.
+            format!("State of {}: 22C", device)
+        } else {
+            "Unknown device".to_string()
+        }
+    }
+}
 
 impl SmartHouse {
     // Create a new Smart House.
@@ -71,54 +126,11 @@ impl SmartHouse {
     }
 }
 
-// Trait for providing information about the status of devices.
-trait DeviceInfoProvider {
-    fn device_info(&self, room: &str, device: &str) -> String;
-}
-struct SmartSocket {}
-struct SmartThermometer {}
-
-// Information provider owning the device data.
-struct OwningDeviceInfoProvider {
-    socket: SmartSocket,
-}
-
-// Information provider borrowing device data.
-struct BorrowingDeviceInfoProvider<'a, 'b> {
-    socket: &'a SmartSocket,
-    thermo: &'b SmartThermometer,
-}
-
-
-impl DeviceInfoProvider for OwningDeviceInfoProvider {
-    fn device_info(&self, _: &str, device: &Device) -> String {
-        match device {
-            Device::Socket(_) => format!("State of Socket: {}", self.socket_state),
-            Device::Thermometer(_) => format!("Temperature of Thermometer: {}", self.thermo_state),
-        }
-    }
-}
-
-impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
-    fn device_info(&self, _: &str, device: &str) -> String {
-        if device == "Socket1" {
-            // Fetch the state from the borrowed SmartSocket.
-            format!("State of {}: OFF", device)
-        } else if device == "Thermometer1" {
-            // Fetch the temperature from the borrowed SmartThermometer.
-            format!("State of {}: 22C", device)
-        } else {
-            "Unknown device".to_string()
-        }
-    }
-}
-
-
 fn main() {
 
-    let LivingRoomSocket = SmartSocket {};
-    let KitchenSocket = SmartSocket {};
-    let KitchenThermometer = SmartThermometer {};
+    let living_room_socket = SmartSocket { name: "LivingRoomSocket".to_string() };
+    let kitchen_socket = SmartSocket { name: "KitchenSocket".to_string() };
+    let kitchen_thermometer = SmartThermometer { name: "KitchenThermometer".to_string() };
     
     let rooms = vec![
         Room {
