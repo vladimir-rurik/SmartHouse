@@ -22,15 +22,13 @@ struct SmartThermometer {
     state: ThermometerState,
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 enum SocketState {
     On,
     Off,
 }
 
-#[derive(Clone)]
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 enum ThermometerState {
     Off,
@@ -58,12 +56,21 @@ impl DeviceInfoProvider for OwningDeviceInfoProvider {
         // Check if the device name matches the socket owned by the provider
         if self.socket.name == device_name {
             match self.socket.state {
-                SocketState::On => format!("In room {}, the socket named {} is On", room_name, device_name),
-                SocketState::Off => format!("In room {}, the socket named {} is Off", room_name, device_name),
+                SocketState::On => format!(
+                    "In room {}, the socket named {} is On",
+                    room_name, device_name
+                ),
+                SocketState::Off => format!(
+                    "In room {}, the socket named {} is Off",
+                    room_name, device_name
+                ),
             }
         } else {
             // We don't have information about the given device name
-            format!("No information available for device named {} in room {}", device_name, room_name)
+            format!(
+                "No information available for device named {} in room {}",
+                device_name, room_name
+            )
         }
     }
 }
@@ -77,15 +84,23 @@ impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
     fn device_info(&self, room_name: &str, device_name: &str) -> String {
         // Check if the requested device name matches the name of the socket or thermometer
         if device_name == self.socket.name {
-            format!("Room: {}, Device: SmartSocket named {}, State: {:?}", room_name, device_name, self.socket.state)
+            format!(
+                "Room: {}, Device: SmartSocket named {}, State: {:?}",
+                room_name, device_name, self.socket.state
+            )
         } else if device_name == self.thermo.name {
-            format!("Room: {}, Device: SmartThermometer named {}, State: {:?}", room_name, device_name, self.thermo.state)
+            format!(
+                "Room: {}, Device: SmartThermometer named {}, State: {:?}",
+                room_name, device_name, self.thermo.state
+            )
         } else {
-            format!("Device named '{}' not found in room '{}'", device_name, room_name)
+            format!(
+                "Device named '{}' not found in room '{}'",
+                device_name, room_name
+            )
         }
     }
 }
-
 
 impl SmartHouse {
     // Create a new Smart House.
@@ -123,7 +138,9 @@ impl SmartHouse {
             for device in &room.devices {
                 let device_info = match device {
                     Device::SmartSocket(device) => provider.device_info(&room.name, &device.name),
-                    Device::SmartThermometer(device) => provider.device_info(&room.name, &device.name),
+                    Device::SmartThermometer(device) => {
+                        provider.device_info(&room.name, &device.name)
+                    }
                 };
                 report.push_str(&format!(
                     "Room: {}, Device: {}, Info: {}\n",
@@ -131,29 +148,29 @@ impl SmartHouse {
                     match device {
                         Device::SmartSocket(device) => &device.name,
                         Device::SmartThermometer(device) => &device.name,
-                    },                    
+                    },
                     device_info
                 ));
             }
         }
         report
     }
- }
+}
 
- fn main() {
-    let living_room_socket = SmartSocket { 
-        name: "LivingRoomSocket".to_string(), 
-        state: SocketState::On 
+fn main() {
+    let living_room_socket = SmartSocket {
+        name: "LivingRoomSocket".to_string(),
+        state: SocketState::On,
     };
-    let kitchen_socket = SmartSocket { 
-        name: "KitchenSocket".to_string(), 
-        state: SocketState::Off 
+    let kitchen_socket = SmartSocket {
+        name: "KitchenSocket".to_string(),
+        state: SocketState::Off,
     };
-    let kitchen_thermometer = SmartThermometer { 
-        name: "KitchenThermometer".to_string(), 
-        state: ThermometerState::Temperature(25.0f32)
+    let kitchen_thermometer = SmartThermometer {
+        name: "KitchenThermometer".to_string(),
+        state: ThermometerState::Temperature(25.0f32),
     };
-    
+
     let rooms = vec![
         Room {
             name: "Living Room".to_string(),
@@ -162,12 +179,12 @@ impl SmartHouse {
         Room {
             name: "Kitchen".to_string(),
             devices: vec![
-                Device::SmartThermometer(kitchen_thermometer.clone()), 
-                Device::SmartSocket(kitchen_socket.clone())
+                Device::SmartThermometer(kitchen_thermometer.clone()),
+                Device::SmartSocket(kitchen_socket.clone()),
             ],
         },
     ];
-    
+
     let house = SmartHouse::new("Home", rooms);
 
     let socket_info_provider = OwningDeviceInfoProvider {
