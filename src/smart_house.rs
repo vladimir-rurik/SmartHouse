@@ -10,29 +10,35 @@ struct Room {
     name: String,
     devices: Vec<Device>,
 }
+#[derive(Clone)]
 struct SmartSocket {
     name: String,
-    state: String,
+    state: SocketState,
 }
+#[derive(Clone)]
+#[allow(dead_code)]
 struct SmartThermometer {
     name: String,
+    state: ThermometerState,
 }
 
-enum SoketState {
+#[derive(Clone)]
+enum SocketState {
     On,
     Off,
 }
 
+#[derive(Clone)]
+#[allow(dead_code)]
 enum ThermometerState {
-    On,
     Off,
     Temperature(f32),
 }
 
 // Enum representing different devices.
 enum Device {
-    SmartSocket(name),
-    SmartThermometer(name),
+    SmartSocket(SmartSocket),
+    SmartThermometer(SmartThermometer),
 }
 
 // Trait for providing information about the status of devices.
@@ -46,29 +52,16 @@ struct OwningDeviceInfoProvider {
 }
 
 impl DeviceInfoProvider for OwningDeviceInfoProvider {
-    fn device_info(&self, _: &str, device_name: &str) -> String {
-        match device_name {
-            Device::Socket(_) => format!("State of Socket: {}", self.socket_state),
-            Device::Thermometer(_) => format!("Temperature of Thermometer: {}", self.thermo_state),
-        }
-    }
-}
-// Information provider borrowing device data.
-struct BorrowingDeviceInfoProvider<'a, 'b> {
-    socket: &'a SmartSocket,
-    thermo: &'b SmartThermometer,
-}
-
-impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
-    fn device_info(&self, _: &str, device: &str) -> String {
-        if device == "Socket1" {
-            // Fetch the state from the borrowed SmartSocket.
-            format!("State of {}: OFF", device)
-        } else if device == "Thermometer1" {
-            // Fetch the temperature from the borrowed SmartThermometer.
-            format!("State of {}: 22C", device)
+    fn device_info(&self, room_name: &str, device_name: &str) -> String {
+        // Check if the device name matches the socket owned by the provider
+        if self.socket.name == device_name {
+            match self.socket.state {
+                SocketState::On => format!("In room {}, the socket named {} is On", room_name, device_name),
+                SocketState::Off => format!("In room {}, the socket named {} is Off", room_name, device_name),
+            }
         } else {
-            "Unknown device".to_string()
+            // We don't have information about the given device name
+            format!("No information available for device named {} in room {}", device_name, room_name)
         }
     }
 }
@@ -95,8 +88,8 @@ impl SmartHouse {
             r.devices
                 .iter()
                 .map(|d| match d {
-                    Device::Socket(name) => name.clone(),
-                    Device::Thermometer(name) => name.clone(),
+                    Device::SmartSocket(socket) => socket.name.clone(),
+                    Device::SmartThermometer(thermometer) => thermometer.name.clone(),
                 })
                 .collect()
         })
@@ -108,57 +101,58 @@ impl SmartHouse {
         for room in &self.rooms {
             for device in &room.devices {
                 let device_info = match device {
-                    Device::Socket(name) => provider.device_info(&room.name, name),
-                    Device::Thermometer(name) => provider.device_info(&room.name, name),
+                    Device::SmartSocket(device) => provider.device_info(&room.name, &device.name),
+                    Device::SmartThermometer(device) => provider.device_info(&room.name, &device.name),
                 };
                 report.push_str(&format!(
                     "Room: {}, Device: {}, Info: {}\n",
                     room.name,
                     match device {
-                        Device::Socket(name) => name,
-                        Device::Thermometer(name) => name,
-                    },
+                        Device::SmartSocket(device) => &device.name,
+                        Device::SmartThermometer(device) => &device.name,
+                    },                    
                     device_info
                 ));
             }
         }
         report
     }
-}
+ }
 
-fn main() {
-
-    let living_room_socket = SmartSocket { name: "LivingRoomSocket".to_string() };
-    let kitchen_socket = SmartSocket { name: "KitchenSocket".to_string() };
-    let kitchen_thermometer = SmartThermometer { name: "KitchenThermometer".to_string() };
+ fn main() {
+    let living_room_socket = SmartSocket { 
+        name: "LivingRoomSocket".to_string(), 
+        state: SocketState::On 
+    };
+    let kitchen_socket = SmartSocket { 
+        name: "KitchenSocket".to_string(), 
+        state: SocketState::Off 
+    };
+    let kitchen_thermometer = SmartThermometer { 
+        name: "KitchenThermometer".to_string(), 
+        state: ThermometerState::Temperature(25.0f32)
+    };
     
     let rooms = vec![
         Room {
             name: "Living Room".to_string(),
-            devices: vec![Device::Socket(LivingRoomSocket)],
+            devices: vec![Device::SmartSocket(living_room_socket.clone())],
         },
         Room {
             name: "Kitchen".to_string(),
-            devices: vec![Device::Thermometer(KitchenThermometer), Device::Socket(KitchenSocket)],
+            devices: vec![
+                Device::SmartThermometer(kitchen_thermometer.clone()), 
+                Device::SmartSocket(kitchen_socket.clone())
+            ],
         },
     ];
     
     let house = SmartHouse::new("Home", rooms);
 
-    let socket_info_provider = SocketInfoProvider {
-        socket_state: "ON".to_string(),
+    let socket_info_provider = OwningDeviceInfoProvider {
+        socket: living_room_socket,
     };
     let report_with_socket = house.create_report(&socket_info_provider);
 
-    let multi_device_info_provider = MultiDeviceInfoProvider {
-        socket_state: "OFF",
-        thermo_state: "22C",
-    };
-    let report_with_multi_device = house.create_report(&multi_device_info_provider);
-
     println!("Report with socket info:\n{}", report_with_socket);
-    println!(
-        "Report with multi-device info:\n{}",
-        report_with_multi_device
-    );
 }
