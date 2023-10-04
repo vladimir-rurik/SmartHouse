@@ -1,16 +1,16 @@
-use super::devices::*;
-// use super::device_info::*;
+ use crate::devices::*;
+// use crate::device_info::*;
 
 // Main structure representing the Smart House.
 #[allow(dead_code)]
 pub struct SmartHouse {
-    name: String,
-    rooms: Vec<Room>,
+    pub name: String,
+    pub rooms: Vec<Room>,
 }
 // Structure representing a room.
 pub struct Room {
-    name: String,
-    devices: Vec<Device>,
+    pub name: String,
+    pub devices: Vec<Device>,
 }
 
 impl SmartHouse {
@@ -43,7 +43,7 @@ impl SmartHouse {
     }
 
     // Generate a textual report about the status of all devices in the house.
-    fn create_report<P: DeviceInfoProvider>(&self, provider: &P) -> String {
+    pub fn create_report<P: DeviceInfoProvider>(&self, provider: &P) -> String {
         let mut report = String::new();
         for room in &self.rooms {
             for device in &room.devices {

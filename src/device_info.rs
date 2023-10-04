@@ -1,4 +1,4 @@
-use super::devices::*;
+use crate::devices::*;
 
 // Trait for providing information about the status of devices.
 pub trait DeviceInfoProvider {

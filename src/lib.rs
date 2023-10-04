@@ -1,9 +1,9 @@
-mod device_info;
 mod devices;
+mod device_info;
 mod smart_house;
 
-pub use device_info::*;
 pub use devices::*;
+pub use device_info::*;
 pub use smart_house::*;
 
 #[cfg(test)]
