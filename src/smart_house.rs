@@ -72,6 +72,7 @@ impl SmartHouse {
 mod tests {
     use super::*;
     use crate::BorrowingDeviceInfoProvider;
+    use crate::Device::{SmartSocket, SmartThermometer};
 
     #[test]
     fn test_smart_house_creation() {

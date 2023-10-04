@@ -1,10 +1,10 @@
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SmartSocket {
     pub name: String,
     pub state: SocketState,
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct SmartThermometer {
     pub name: String,
