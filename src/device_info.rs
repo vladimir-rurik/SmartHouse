@@ -1,5 +1,4 @@
 use crate::devices::*;
-
 // Trait for providing information about the status of devices.
 pub trait DeviceInfoProvider {
     fn device_info(&self, room: &str, device_name: &str) -> String;

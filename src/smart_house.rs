@@ -1,5 +1,5 @@
- use crate::devices::*;
-// use crate::device_info::*;
+use crate::Device;
+// use crate::DeviceInfoProvider;
 
 // Main structure representing the Smart House.
 #[allow(dead_code)]
@@ -71,7 +71,7 @@ impl SmartHouse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    //use super::devices::{SmartSocket, SmartThermometer, SocketState, ThermometerState};
+    use crate::BorrowingDeviceInfoProvider;
 
     #[test]
     fn test_smart_house_creation() {
@@ -112,6 +112,7 @@ mod tests {
 
     #[test]
     fn test_smart_house_report() {
+
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,

@@ -6,6 +6,11 @@ pub use devices::*;
 pub use device_info::*;
 pub use smart_house::*;
 
+pub mod prelude {
+    pub use crate::devices::*;
+    pub use crate::device_info::*;
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
