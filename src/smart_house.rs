@@ -1,13 +1,14 @@
 use super::devices::*;
-use super::device_info::*;
+// use super::device_info::*;
+
 // Main structure representing the Smart House.
 #[allow(dead_code)]
-struct SmartHouse {
+pub struct SmartHouse {
     name: String,
     rooms: Vec<Room>,
 }
 // Structure representing a room.
-struct Room {
+pub struct Room {
     name: String,
     devices: Vec<Device>,
 }
@@ -70,7 +71,7 @@ impl SmartHouse {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::devices::{SmartSocket, SmartThermometer, SocketState, ThermometerState};
+    //use super::devices::{SmartSocket, SmartThermometer, SocketState, ThermometerState};
 
     #[test]
     fn test_smart_house_creation() {
