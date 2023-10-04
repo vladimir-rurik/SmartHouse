@@ -7,7 +7,7 @@ pub trait DeviceInfoProvider {
 
 // Information provider owning the device data.
 pub struct OwningDeviceInfoProvider {
-    socket: SmartSocket,
+    pub socket: SmartSocket,
 }
 
 impl DeviceInfoProvider for OwningDeviceInfoProvider {
@@ -35,8 +35,8 @@ impl DeviceInfoProvider for OwningDeviceInfoProvider {
 }
 
 pub struct BorrowingDeviceInfoProvider<'a, 'b> {
-    socket: &'a SmartSocket,
-    thermo: &'b SmartThermometer,
+    pub socket: &'a SmartSocket,
+    pub thermo: &'b SmartThermometer,
 }
 
 impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
