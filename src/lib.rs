@@ -1,13 +1,10 @@
-mod devices;
 mod device_info;
-mod smart_house;
 
-pub use devices::*;
+pub use device_info::devices::*;
 pub use device_info::*;
-pub use smart_house::*;
 
 pub mod prelude {
-    pub use crate::devices::*;
+    pub use crate::device_info::devices::*;
     pub use crate::device_info::*;
 }
 
@@ -75,31 +72,6 @@ mod tests {
         assert_eq!(
             thermo_info,
             "Room: Kitchen, Device: SmartThermometer named ThermoInKitchen, State: Temperature(20.0)"
-        );
-    }
-
-    #[test]
-    fn test_smart_house_report_generation() {
-        let socket = SmartSocket {
-            name: "SocketInRoom".to_string(),
-            state: SocketState::On,
-        };
-        let room = Room {
-            name: "LivingRoom".to_string(),
-            devices: vec![Device::SmartSocket(socket)],
-        };
-        let house = SmartHouse {
-            name: "MyHome".to_string(),
-            rooms: vec![room],
-        };
-
-        let provider = OwningDeviceInfoProvider {
-            socket: socket.clone(),
-        };
-        let report = house.create_report(&provider);
-        assert_eq!(
-            report,
-            "Room: LivingRoom, Device: SocketInRoom, Info: In room LivingRoom, the socket named SocketInRoom is On\n"
         );
     }
 }

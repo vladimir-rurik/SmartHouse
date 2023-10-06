@@ -1,4 +1,5 @@
-use crate::devices::*;
+pub mod devices;
+use devices::{SmartSocket, SmartThermometer, SocketState};
 // Trait for providing information about the status of devices.
 pub trait DeviceInfoProvider {
     fn device_info(&self, room: &str, device_name: &str) -> String;
@@ -63,7 +64,7 @@ impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use super::super::devices::{SmartSocket, SmartThermometer, SocketState, ThermometerState};
+    use devices::{SmartSocket, SmartThermometer, SocketState, ThermometerState};
 
     #[test]
     fn test_owning_device_info_provider_socket() {
@@ -100,7 +101,10 @@ mod tests {
             name: "Thermo1".to_string(),
             state: ThermometerState::Temperature(22.0),
         };
-        let provider = BorrowingDeviceInfoProvider { socket: &socket, thermo: &thermo };
+        let provider = BorrowingDeviceInfoProvider {
+            socket: &socket,
+            thermo: &thermo,
+        };
         let info = provider.device_info("LivingRoom", "Socket1");
         assert_eq!(
             info,
@@ -118,7 +122,10 @@ mod tests {
             name: "Thermo1".to_string(),
             state: ThermometerState::Temperature(22.0),
         };
-        let provider = BorrowingDeviceInfoProvider { socket: &socket, thermo: &thermo };
+        let provider = BorrowingDeviceInfoProvider {
+            socket: &socket,
+            thermo: &thermo,
+        };
         let info = provider.device_info("LivingRoom", "Thermo1");
         assert_eq!(
             info,
