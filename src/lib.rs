@@ -41,7 +41,7 @@ mod tests {
             name: "SocketInRoom".to_string(),
             state: SocketState::On,
         };
-        let provider = OwningDeviceInfoProvider { socket: socket };
+        let provider = OwningDeviceInfoProvider { socket };
         let info = provider.device_info("LivingRoom", "SocketInRoom").unwrap();
         assert_eq!(
             info,
