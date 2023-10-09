@@ -1,7 +1,5 @@
 mod device_info;
 pub mod smart_house {
-    //use crate::Device;
-    //use super::*;
     use super::device_info::devices::Device;
     use super::device_info::DeviceInfoProvider;
 
@@ -59,14 +57,15 @@ pub mod smart_house {
                             provider.device_info(&room.name, &device.name)
                         }
                     };
+                    let device_name = match device {
+                        Device::SmartSocket(device) => &device.name,
+                        Device::SmartThermometer(device) => &device.name,
+                    };
                     report.push_str(&format!(
                         "Room: {}, Device: {}, Info: {}\n",
                         room.name,
-                        match device {
-                            Device::SmartSocket(device) => &device.name,
-                            Device::SmartThermometer(device) => &device.name,
-                        },
-                        device_info
+                        device_name,
+                        device_info.unwrap_or_else(|e| format!("Error: {:?}", e))
                     ));
                 }
             }
@@ -199,6 +198,7 @@ mod tests {
         let report = house.create_report(&provider);
         assert!(report.contains("Socket1"));
         assert!(report.contains("Thermo1"));
+        assert!(!report.contains("Error:"));
     }
 
     #[test]
@@ -224,5 +224,6 @@ mod tests {
             report,
             "Room: LivingRoom, Device: SocketInRoom, Info: In room LivingRoom, the socket named SocketInRoom is On\n"
         );
+        assert!(!report.contains("Error:"));
     }
 }

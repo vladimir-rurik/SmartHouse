@@ -41,8 +41,8 @@ mod tests {
             name: "SocketInRoom".to_string(),
             state: SocketState::On,
         };
-        let provider = OwningDeviceInfoProvider { socket: socket };
-        let info = provider.device_info("LivingRoom", "SocketInRoom");
+        let provider = OwningDeviceInfoProvider { socket };
+        let info = provider.device_info("LivingRoom", "SocketInRoom").unwrap();
         assert_eq!(
             info,
             "In room LivingRoom, the socket named SocketInRoom is On"
@@ -63,12 +63,12 @@ mod tests {
             socket: &socket,
             thermo: &thermo,
         };
-        let socket_info = provider.device_info("Kitchen", "SocketInKitchen");
+        let socket_info = provider.device_info("Kitchen", "SocketInKitchen").unwrap();
         assert_eq!(
             socket_info,
             "Room: Kitchen, Device: SmartSocket named SocketInKitchen, State: Off"
         );
-        let thermo_info = provider.device_info("Kitchen", "ThermoInKitchen");
+        let thermo_info = provider.device_info("Kitchen", "ThermoInKitchen").unwrap();
         assert_eq!(
             thermo_info,
             "Room: Kitchen, Device: SmartThermometer named ThermoInKitchen, State: Temperature(20.0)"

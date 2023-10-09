@@ -2,7 +2,7 @@ pub mod devices;
 use devices::{SmartSocket, SmartThermometer, SocketState};
 // Trait for providing information about the status of devices.
 pub trait DeviceInfoProvider {
-    fn device_info(&self, room: &str, device_name: &str) -> String;
+    fn device_info(&self, room: &str, device_name: &str) -> Result<String, DeviceInfoError>;
 }
 
 // Information provider owning the device data.
@@ -10,26 +10,30 @@ pub struct OwningDeviceInfoProvider {
     pub socket: SmartSocket,
 }
 
+// Define an error type for device information.
+#[derive(Debug, PartialEq, Clone)]
+#[warn(dead_code)]
+pub enum DeviceInfoError {
+    NotFound,
+    Unknown,
+}
+
 impl DeviceInfoProvider for OwningDeviceInfoProvider {
-    fn device_info(&self, room_name: &str, device_name: &str) -> String {
-        // Check if the device name matches the socket owned by the provider
+    fn device_info(&self, room_name: &str, device_name: &str) -> Result<String, DeviceInfoError> {
         if self.socket.name == device_name {
             match self.socket.state {
-                SocketState::On => format!(
+                SocketState::On => Ok(format!(
                     "In room {}, the socket named {} is On",
                     room_name, device_name
-                ),
-                SocketState::Off => format!(
+                )),
+                SocketState::Off => Ok(format!(
                     "In room {}, the socket named {} is Off",
                     room_name, device_name
-                ),
+                )),
             }
         } else {
             // We don't have information about the given device name
-            format!(
-                "No information available for device named {} in room {}",
-                device_name, room_name
-            )
+            Err(DeviceInfoError::NotFound)
         }
     }
 }
@@ -40,23 +44,19 @@ pub struct BorrowingDeviceInfoProvider<'a, 'b> {
 }
 
 impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
-    fn device_info(&self, room_name: &str, device_name: &str) -> String {
-        // Check if the requested device name matches the name of the socket or thermometer
+    fn device_info(&self, room_name: &str, device_name: &str) -> Result<String, DeviceInfoError> {
         if device_name == self.socket.name {
-            format!(
+            Ok(format!(
                 "Room: {}, Device: SmartSocket named {}, State: {:?}",
                 room_name, device_name, self.socket.state
-            )
+            ))
         } else if device_name == self.thermo.name {
-            format!(
+            Ok(format!(
                 "Room: {}, Device: SmartThermometer named {}, State: {:?}",
                 room_name, device_name, self.thermo.state
-            )
+            ))
         } else {
-            format!(
-                "Device named '{}' not found in room '{}'",
-                device_name, room_name
-            )
+            Err(DeviceInfoError::NotFound)
         }
     }
 }
@@ -73,7 +73,7 @@ mod tests {
             state: SocketState::On,
         };
         let provider = OwningDeviceInfoProvider { socket };
-        let info = provider.device_info("LivingRoom", "Socket1");
+        let info = provider.device_info("LivingRoom", "Socket1").unwrap();
         assert_eq!(info, "In room LivingRoom, the socket named Socket1 is On");
     }
 
@@ -85,10 +85,7 @@ mod tests {
         };
         let provider = OwningDeviceInfoProvider { socket };
         let info = provider.device_info("LivingRoom", "Socket2");
-        assert_eq!(
-            info,
-            "No information available for device named Socket2 in room LivingRoom"
-        );
+        assert_eq!(info, Err(DeviceInfoError::NotFound));
     }
 
     #[test]
@@ -105,7 +102,7 @@ mod tests {
             socket: &socket,
             thermo: &thermo,
         };
-        let info = provider.device_info("LivingRoom", "Socket1");
+        let info = provider.device_info("LivingRoom", "Socket1").unwrap();
         assert_eq!(
             info,
             "Room: LivingRoom, Device: SmartSocket named Socket1, State: On"
@@ -126,7 +123,7 @@ mod tests {
             socket: &socket,
             thermo: &thermo,
         };
-        let info = provider.device_info("LivingRoom", "Thermo1");
+        let info = provider.device_info("LivingRoom", "Thermo1").unwrap();
         assert_eq!(
             info,
             "Room: LivingRoom, Device: SmartThermometer named Thermo1, State: Temperature(22.0)"
