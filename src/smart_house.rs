@@ -9,11 +9,6 @@ pub mod smart_house {
         pub name: String,
         pub rooms: Vec<Room>,
     }
-    // Structure representing a room.
-    pub struct Room {
-        pub name: String,
-        pub devices: Vec<Device>,
-    }
 
     impl SmartHouse {
         // Create a new Smart House.
@@ -22,6 +17,22 @@ pub mod smart_house {
                 name: name.to_string(),
                 rooms,
             }
+        }
+
+        pub fn add_room(&mut self, room: Room) {
+            self.rooms.push(room);
+        }
+
+        pub fn remove_room(&mut self, room_name: &str) {
+            self.rooms.retain(|room| room.name != room_name);
+        }
+
+        pub fn list_rooms(&self) -> Vec<&str> {
+            self.rooms.iter().map(|room| room.name.as_str()).collect()
+        }
+
+        pub fn get_room_mut(&mut self, room_name: &str) -> Option<&mut Room> {
+            self.rooms.iter_mut().find(|room| room.name == room_name)
         }
 
         // Get a list of rooms in the house.
@@ -70,6 +81,50 @@ pub mod smart_house {
                 }
             }
             report
+        }
+    }
+
+    // Structure representing a room.
+    pub struct Room {
+        pub name: String,
+        pub devices: Vec<Device>,
+    }
+
+    impl Room {
+        // Create a new room.
+        #[allow(dead_code)]
+        pub(crate) fn new(name: &str, devices: Vec<Device>) -> Self {
+            Room {
+                name: name.to_string(),
+                devices,
+            }
+        }
+
+        // Add a device to the room.
+        #[allow(dead_code)]
+        pub(crate) fn add_device(&mut self, device: Device) {
+            self.devices.push(device);
+        }
+
+        // Remove a device from the room.
+        #[allow(dead_code)]
+        pub(crate) fn remove_device(&mut self, device_name: &str) {
+            self.devices.retain(|device| match device {
+                Device::SmartSocket(socket) => socket.name.as_str() != device_name,
+                Device::SmartThermometer(thermometer) => thermometer.name.as_str() != device_name,
+            });
+        }
+
+        // Get a list of devices in the room.
+        #[allow(dead_code)]
+        pub(crate) fn list_devices(&self) -> Vec<&str> {
+            self.devices
+                .iter()
+                .map(|device| match device {
+                    Device::SmartSocket(socket) => socket.name.as_str(),
+                    Device::SmartThermometer(thermometer) => thermometer.name.as_str(),
+                })
+                .collect()
         }
     }
 }
@@ -134,6 +189,29 @@ mod tests {
     };
     use super::device_info::{BorrowingDeviceInfoProvider, OwningDeviceInfoProvider};
     use crate::smart_house::*;
+
+    #[test]
+    fn test_add_remove_room() {
+        let mut house = SmartHouse::new("HouseName", Vec::new()); // Added "HouseName" to the SmartHouse initialization
+        let room = Room::new("Living Room", Vec::new()); // Added devices Vec::new() to Room initialization
+        house.add_room(room);
+        assert_eq!(house.list_rooms(), vec!["Living Room"]);
+        house.remove_room("Living Room");
+        assert_eq!(house.list_rooms().len(), 0);
+    }
+
+    #[test]
+    fn test_add_remove_device() {
+        let mut room = Room::new("Bedroom", Vec::new()); // Added devices Vec::new() to Room initialization
+        let device = Device::SmartSocket(SmartSocket {
+            name: "Socket1".to_string(),
+            state: SocketState::On,
+        });
+        room.add_device(device);
+        assert_eq!(room.list_devices(), vec!["Socket1"]);
+        room.remove_device("Socket1");
+        assert_eq!(room.list_devices().len(), 0);
+    }
 
     #[test]
     fn test_smart_house_creation() {
