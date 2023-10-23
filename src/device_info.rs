@@ -15,7 +15,6 @@ pub struct OwningDeviceInfoProvider {
 #[warn(dead_code)]
 pub enum DeviceInfoError {
     NotFound,
-    Unknown,
 }
 
 impl DeviceInfoProvider for OwningDeviceInfoProvider {

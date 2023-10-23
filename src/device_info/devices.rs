@@ -5,6 +5,16 @@ pub struct SmartSocket {
     pub power_consumption: f32,
 }
 
+impl Default for SmartSocket {
+    fn default() -> Self {
+        Self {
+            name: "TestSocket".to_string(),
+            state: SocketState::Off,
+            power_consumption: 0.0,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 #[allow(dead_code)]
 pub struct SmartThermometer {
@@ -26,6 +36,7 @@ pub enum ThermometerState {
 }
 
 // Enum representing different devices.
+#[allow(dead_code)]
 pub enum Device {
     SmartSocket(SmartSocket),
     SmartThermometer(SmartThermometer),
