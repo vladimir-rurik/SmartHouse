@@ -2,6 +2,7 @@
 pub struct SmartSocket {
     pub name: String,
     pub state: SocketState,
+    pub power_consumption: f32,
 }
 
 #[derive(Clone, Debug)]

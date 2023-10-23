@@ -17,6 +17,7 @@ mod tests {
         let socket = SmartSocket {
             name: "TestSocket".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         assert_eq!(socket.name, "TestSocket");
         assert_eq!(socket.state, SocketState::On);
@@ -40,6 +41,7 @@ mod tests {
         let socket = SmartSocket {
             name: "SocketInRoom".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         let provider = OwningDeviceInfoProvider { socket };
         let info = provider.device_info("LivingRoom", "SocketInRoom").unwrap();
@@ -54,6 +56,7 @@ mod tests {
         let socket = SmartSocket {
             name: "SocketInKitchen".to_string(),
             state: SocketState::Off,
+            power_consumption: 100.0,
         };
         let thermo = SmartThermometer {
             name: "ThermoInKitchen".to_string(),

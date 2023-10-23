@@ -137,10 +137,12 @@ fn main() {
     let living_room_socket = SmartSocket {
         name: "LivingRoomSocket".to_string(),
         state: SocketState::On,
+        power_consumption: 100.0f32,
     };
     let kitchen_socket = SmartSocket {
         name: "KitchenSocket".to_string(),
         state: SocketState::Off,
+        power_consumption: 200.0f32,
     };
     let kitchen_thermometer = SmartThermometer {
         name: "KitchenThermometer".to_string(),
@@ -206,6 +208,7 @@ mod tests {
         let device = Device::SmartSocket(SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0f32,
         });
         room.add_device(device);
         assert_eq!(room.list_devices(), vec!["Socket1"]);
@@ -240,6 +243,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0f32,
         };
         let room = Room {
             name: "LivingRoom".to_string(),
@@ -255,6 +259,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0f32,
         };
         let thermo = SmartThermometer {
             name: "Thermo1".to_string(),
@@ -284,6 +289,7 @@ mod tests {
         let socket = SmartSocket {
             name: "SocketInRoom".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0f32,
         };
         let room = Room {
             name: "LivingRoom".to_string(),

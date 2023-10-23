@@ -71,6 +71,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         let provider = OwningDeviceInfoProvider { socket };
         let info = provider.device_info("LivingRoom", "Socket1").unwrap();
@@ -82,6 +83,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         let provider = OwningDeviceInfoProvider { socket };
         let info = provider.device_info("LivingRoom", "Socket2");
@@ -93,6 +95,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         let thermo = SmartThermometer {
             name: "Thermo1".to_string(),
@@ -114,6 +117,7 @@ mod tests {
         let socket = SmartSocket {
             name: "Socket1".to_string(),
             state: SocketState::On,
+            power_consumption: 100.0,
         };
         let thermo = SmartThermometer {
             name: "Thermo1".to_string(),
