@@ -1,11 +1,17 @@
-mod device_info;
+pub mod device_info;
+// pub mod udp_thermometer;
 
 pub use device_info::devices::*;
 pub use device_info::*;
+// pub use udp_thermometer::udp_thermometer_simulator::*;
+// pub use udp_thermometer::udp_thermometer_listener::*;
+// pub use udp_thermometer::*;
 
 pub mod prelude {
     pub use crate::device_info::devices::*;
     pub use crate::device_info::*;
+    // pub use crate::udp_thermometer::udp_thermometer_simulator::*;
+    // pub use crate::udp_thermometer::udp_thermometer_listener::*;
 }
 
 #[cfg(test)]

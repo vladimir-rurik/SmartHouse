@@ -23,6 +23,7 @@ pub struct SmartThermometer {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+#[allow(dead_code)]
 pub enum SocketState {
     On,
     Off,

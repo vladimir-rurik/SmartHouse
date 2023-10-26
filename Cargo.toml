@@ -15,6 +15,11 @@ path = "src/smart_socket_client.rs"
 name = "smart_socket_server"
 path = "src/smart_socket_server.rs"
 
+[[bin]]
+name = "udp_thermometer_main"
+path = "src/udp_thermometer_main.rs"
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+rand = "0.8.4"

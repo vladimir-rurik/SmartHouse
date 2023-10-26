@@ -1,5 +1,5 @@
 mod device_info;
-use device_info::devices::*;
+use device_info::devices::{SmartSocket, SocketState};
 
 use std::io::{Read, Write};
 use std::net::{TcpListener, TcpStream};

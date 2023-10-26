@@ -1,4 +1,4 @@
-mod device_info;
+pub mod device_info;
 pub mod smart_house {
     use super::device_info::devices::Device;
     use super::device_info::DeviceInfoProvider;
