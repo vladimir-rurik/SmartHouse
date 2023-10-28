@@ -11,4 +11,8 @@ fn main() {
 
     let simulator = UdpThermometerSimulator::new("127.0.0.1:7878");
     simulator.start_sending();
+
+    loop {
+        std::thread::sleep(std::time::Duration::from_secs(8));
+    }
 }

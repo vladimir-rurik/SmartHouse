@@ -6,11 +6,13 @@ use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
+#[allow(dead_code)]
 pub struct UdpThermometerListener {
     address: String,
     thermometer: Arc<Mutex<SmartThermometer>>,
 }
 
+#[allow(dead_code)]
 impl UdpThermometerListener {
     pub fn new(address: &str, name: &str) -> Self {
         Self {
@@ -34,6 +36,7 @@ impl UdpThermometerListener {
                 let temperature: f32 = f32::from_be_bytes(buf[0..amt].try_into().unwrap());
                 thermometer_handle.lock().unwrap().state =
                     ThermometerState::Temperature(temperature);
+                println!("Received temperature: {}", temperature);
             }
             thread::sleep(Duration::from_secs(2));
         });

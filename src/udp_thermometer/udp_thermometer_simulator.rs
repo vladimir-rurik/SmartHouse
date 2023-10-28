@@ -3,10 +3,12 @@ use std::net::UdpSocket;
 use std::thread;
 use std::time::Duration;
 
+#[allow(dead_code)]
 pub struct UdpThermometerSimulator {
     destination: String,
 }
 
+#[allow(dead_code)]
 impl UdpThermometerSimulator {
     pub fn new(destination: &str) -> Self {
         Self {
@@ -22,7 +24,8 @@ impl UdpThermometerSimulator {
             socket
                 .send_to(&temperature.to_be_bytes(), &destination)
                 .expect("Failed to send data");
-            thread::sleep(Duration::from_secs(5));
+            println!("Sent temperature: {}", temperature);
+            thread::sleep(Duration::from_secs(4));
         });
     }
 }
