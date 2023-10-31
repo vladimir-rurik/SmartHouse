@@ -1,18 +1,14 @@
 use crate::{SmartThermometer, ThermometerState};
-
-use std::convert::TryInto;
-use std::net::UdpSocket;
-use std::sync::{Arc, Mutex};
-use std::thread;
+use std::sync::Arc;
 use std::time::Duration;
+use tokio::net::UdpSocket;
+use tokio::sync::Mutex;
 
-#[allow(dead_code)]
 pub struct UdpThermometerListener {
     address: String,
     thermometer: Arc<Mutex<SmartThermometer>>,
 }
 
-#[allow(dead_code)]
 impl UdpThermometerListener {
     pub fn new(address: &str, name: &str) -> Self {
         Self {
@@ -24,26 +20,28 @@ impl UdpThermometerListener {
         }
     }
 
-    pub fn start_listening(&self) {
-        let socket = UdpSocket::bind(&self.address).expect("Couldn't bind to address");
-
-        // Clone the Arc<Mutex<SmartThermometer>> handle
+    pub async fn start_listening(&self) {
+        let socket = UdpSocket::bind(&self.address)
+            .await
+            .expect("Couldn't bind to address");
         let thermometer_handle = self.thermometer.clone();
 
-        thread::spawn(move || loop {
+        tokio::spawn(async move {
             let mut buf = [0u8; 8];
-            if let Ok((amt, _src)) = socket.recv_from(&mut buf) {
-                let temperature: f32 = f32::from_be_bytes(buf[0..amt].try_into().unwrap());
-                thermometer_handle.lock().unwrap().state =
-                    ThermometerState::Temperature(temperature);
-                println!("Received temperature: {}", temperature);
+            loop {
+                if let Ok((amt, _src)) = socket.recv_from(&mut buf).await {
+                    let temperature: f32 = f32::from_be_bytes(buf[0..amt].try_into().unwrap());
+                    thermometer_handle.lock().await.state =
+                        ThermometerState::Temperature(temperature);
+                    println!("Received temperature: {}", temperature);
+                }
+                tokio::time::sleep(Duration::from_secs(2)).await;
             }
-            thread::sleep(Duration::from_secs(2));
         });
     }
 
     #[allow(dead_code)]
-    pub fn get_temperature(&self) -> ThermometerState {
-        self.thermometer.lock().unwrap().state.clone()
+    pub async fn get_temperature(&self) -> ThermometerState {
+        self.thermometer.lock().await.state.clone()
     }
 }

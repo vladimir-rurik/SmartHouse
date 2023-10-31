@@ -1,14 +1,11 @@
 use rand::Rng;
-use std::net::UdpSocket;
-use std::thread;
 use std::time::Duration;
+use tokio::net::UdpSocket;
 
-#[allow(dead_code)]
 pub struct UdpThermometerSimulator {
     destination: String,
 }
 
-#[allow(dead_code)]
 impl UdpThermometerSimulator {
     pub fn new(destination: &str) -> Self {
         Self {
@@ -16,16 +13,22 @@ impl UdpThermometerSimulator {
         }
     }
 
-    pub fn start_sending(&self) {
-        let socket = UdpSocket::bind("0.0.0.0:0").expect("Couldn't bind to address");
+    pub async fn start_sending(&self) {
+        let socket = UdpSocket::bind("0.0.0.0:0")
+            .await
+            .expect("Couldn't bind to address");
         let destination = self.destination.clone();
-        thread::spawn(move || loop {
-            let temperature: f32 = rand::thread_rng().gen_range(15.0..30.0);
-            socket
-                .send_to(&temperature.to_be_bytes(), &destination)
-                .expect("Failed to send data");
-            println!("Sent temperature: {}", temperature);
-            thread::sleep(Duration::from_secs(4));
+
+        tokio::spawn(async move {
+            loop {
+                let temperature: f32 = rand::thread_rng().gen_range(15.0..30.0);
+                socket
+                    .send_to(&temperature.to_be_bytes(), &destination)
+                    .await
+                    .expect("Failed to send data");
+                println!("Sent temperature: {}", temperature);
+                tokio::time::sleep(Duration::from_secs(4)).await;
+            }
         });
     }
 }
