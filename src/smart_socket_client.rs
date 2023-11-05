@@ -1,29 +1,33 @@
-use std::io::{self, Read, Write};
-use std::net::TcpStream;
-use std::str::from_utf8;
+use tokio::net::TcpStream;
+use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
-fn main() {
-    match TcpStream::connect("127.0.0.1:8080") {
+#[tokio::main]
+async fn main() {
+    let mut buffer = String::new();
+    
+    match TcpStream::connect("127.0.0.1:8080").await {
         Ok(mut stream) => {
             println!("Successfully connected to server");
-
+            
             loop {
-                let mut input = String::new();
-                io::stdin().read_line(&mut input).unwrap();
-                let trimmed = input.trim();
+                buffer.clear(); // Clear buffer
+                std::io::stdin().read_line(&mut buffer).expect("Failed to read from stdin"); // Sync read
+                
+                let trimmed = buffer.trim();
+                if trimmed.is_empty() {
+                    continue; // Skip empty inputs
+                }
 
-                stream.write_all(trimmed.as_bytes()).unwrap();
+                // Send to server asynchronously
+                stream.write_all(trimmed.as_bytes()).await.expect("Failed to write to stream");
 
-                let mut data = [0_u8; 50];
-                match stream.read(&mut data) {
-                    Ok(_) => {
-                        if let Ok(text) = from_utf8(&data) {
-                            println!("Response: {}", text);
-                        }
-                    }
-                    Err(e) => {
-                        println!("Failed to receive data: {}", e);
-                    }
+                let mut data = vec![0; 50]; // Use Vec<u8> to be able to extend it later
+                let mut buffer = tokio::io::ReadBuf::new(&mut data);
+                stream.read_buf(&mut buffer).await.expect("Failed to read from stream");
+
+                let response = buffer.filled(); // Get the filled part of the buffer
+                if let Ok(text) = std::str::from_utf8(response) {
+                    println!("Response: {}", text);
                 }
             }
         }
