@@ -1,16 +1,16 @@
 mod device_info;
 use device_info::devices::{SmartSocket, SocketState};
+use std::str::from_utf8;
+use std::sync::Arc;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 use tokio::net::{TcpListener, TcpStream};
-use std::str::from_utf8;
 use tokio::sync::Mutex;
-use std::sync::Arc;
 
 async fn handle_client(mut stream: TcpStream, socket: Arc<Mutex<SmartSocket>>) {
     let mut data = vec![0_u8; 50]; // Use a Vec<u8> to allow for resizing if necessary
     loop {
         let size = match stream.read(&mut data).await {
-            Ok(size) if size == 0 => return, // Connection closed
+            Ok(0) => return, // Connection closed
             Ok(size) => size,
             Err(_) => {
                 eprintln!("An error occurred with the connection.");
@@ -25,20 +25,20 @@ async fn handle_client(mut stream: TcpStream, socket: Arc<Mutex<SmartSocket>>) {
             "status" => {
                 let status = format!("{:?}, Power: {}", socket.state, socket.power_consumption);
                 stream.write_all(status.as_bytes()).await.unwrap();
-            },
+            }
             "on" => {
                 socket.state = SocketState::On;
                 socket.power_consumption = 100.0; // just an example value
                 stream.write_all(b"Socket turned on").await.unwrap();
-            },
+            }
             "off" => {
                 socket.state = SocketState::Off;
                 socket.power_consumption = 0.0;
                 stream.write_all(b"Socket turned off").await.unwrap();
-            },
+            }
             _ => {
                 stream.write_all(b"Unknown command").await.unwrap();
-            },
+            }
         }
     }
 }
