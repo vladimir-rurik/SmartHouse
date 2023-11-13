@@ -1,3 +1,5 @@
+use thiserror::Error;
+
 pub mod devices;
 use devices::{SmartSocket, SmartThermometer, SocketState};
 // Trait for providing information about the status of devices.
@@ -11,10 +13,13 @@ pub struct OwningDeviceInfoProvider {
 }
 
 // Define an error type for device information.
-#[derive(Debug, PartialEq, Clone)]
-#[warn(dead_code)]
+#[derive(Error, Debug, PartialEq, Clone)]
 pub enum DeviceInfoError {
-    NotFound,
+    #[error("Information for device named {0} not found")]
+    NotFound(String),
+    #[allow(dead_code)] 
+    #[error("Unknown error occurred")]
+    Unknown,
 }
 
 impl DeviceInfoProvider for OwningDeviceInfoProvider {
@@ -32,7 +37,7 @@ impl DeviceInfoProvider for OwningDeviceInfoProvider {
             }
         } else {
             // We don't have information about the given device name
-            Err(DeviceInfoError::NotFound)
+            Err(DeviceInfoError::NotFound(device_name.to_owned()))
         }
     }
 }
@@ -55,7 +60,7 @@ impl<'a, 'b> DeviceInfoProvider for BorrowingDeviceInfoProvider<'a, 'b> {
                 room_name, device_name, self.thermo.state
             ))
         } else {
-            Err(DeviceInfoError::NotFound)
+            Err(DeviceInfoError::NotFound(device_name.to_owned()))
         }
     }
 }
@@ -85,8 +90,8 @@ mod tests {
             power_consumption: 100.0,
         };
         let provider = OwningDeviceInfoProvider { socket };
-        let info = provider.device_info("LivingRoom", "Socket2");
-        assert_eq!(info, Err(DeviceInfoError::NotFound));
+        let result = provider.device_info("LivingRoom", "Socket2");
+        assert!(matches!(result, Err(DeviceInfoError::NotFound(_))));
     }
 
     #[test]
